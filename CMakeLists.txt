@@ -16,11 +16,6 @@ add_executable(chip8
     src/Chip8.cpp
 )
 
-target_include_directories(chip8
-    PRIVATE
-        src
-)
-
 if(MSVC)
     target_compile_options(chip8 PRIVATE /W4)
 else()

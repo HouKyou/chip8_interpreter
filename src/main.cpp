@@ -6,6 +6,10 @@
 
 int main()
 {
-	std::cout << "Hello CMake." << std::endl;
+	std::cout << "Chip 8 running..." << '\n';
+	std::filesystem::path romPath = "D:/code/source/re/repo/pj_chip8/input/IBM Logo.ch8";
+	Chip8 chip8;
+	chip8.readRom(romPath);
+	chip8.dumpMemory();
 	return 0;
 }

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <array>
 #include <filesystem>
+#include <random>
 
 class Chip8 {
 private:
@@ -47,11 +48,15 @@ private:
 	uint8_t soundTimer_{};
 
 	std::array<uint8_t, KeyCount> keypad_{};
-	std::array<uint32_t, DisplayWidth * DisplayHeight> display_{};
+	std::array<uint32_t, DisplayWidth* DisplayHeight> display_{};
+	std::mt19937 rng{ std::random_device{}() };
+	std::uniform_int_distribution<int> randByte{ 0, 255U };
+
 public:
 	Chip8();
 	void initialize();
 	void setFonts();
 	bool readRom(const std::filesystem::path& romPath);
 	void dumpMemory() const;
+	uint8_t getRandByte();
 };

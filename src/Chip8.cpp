@@ -8,8 +8,8 @@ Chip8::Chip8() {
 }
 
 void Chip8::setFonts() {
-	std::copy(fontTable.begin(), 
-		fontTable.end(), 
+	std::copy(fontTable.begin(),
+		fontTable.end(),
 		memory_.begin() + FontsStartAddress);
 }
 
@@ -45,17 +45,17 @@ void Chip8::dumpMemory() const {
 	std::cout << "Memory dump:" << std::endl;
 	for (std::size_t i = 0; i < MemorySize; ++i) {
 		if (i % 16 == 0) {
-			std::cout << '\n' 
+			std::cout << '\n'
 				<< std::hex
-				<< std::setw(4) 
-				<< std::setfill('0') 
-				<< i 
+				<< std::setw(4)
+				<< std::setfill('0')
+				<< i
 				<< ': ';
 		}
-		std::cout << std::hex 
-			<< std::setw(2) 
-			<< std::setfill('0') 
-			<< static_cast<int>(memory_[i]) 
+		std::cout << std::hex
+			<< std::setw(2)
+			<< std::setfill('0')
+			<< static_cast<int>(memory_[i])
 			<< ' ';
 	}
 	std::cout << std::dec << '\n';
@@ -64,4 +64,24 @@ void Chip8::dumpMemory() const {
 uint8_t Chip8::getRandByte() {
 	std::cout << "random byte: " << randByte(rng) << '\n';
 	return static_cast<uint8_t>(randByte(rng));
+}
+
+void Chip8::opcode00E0() {
+	display_.fill(0);
+}
+
+void Chip8::opcode00EE() {
+	programCounter_ = stack_[--stackPointer_];
+}
+
+void Chip8::opcode1NNN()
+{
+}
+
+void Chip8::opcode2NNN()
+{
+}
+
+void Chip8::opcode3xkk()
+{
 }

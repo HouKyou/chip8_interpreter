@@ -11,5 +11,7 @@ int main()
 	Chip8 chip8;
 	chip8.readRom(romPath);
 	chip8.dumpMemory();
+	chip8.getRandByte();
+	std::cout << "chip8 size: " << sizeof(chip8);
 	return 0;
 }

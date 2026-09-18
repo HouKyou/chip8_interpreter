@@ -60,3 +60,8 @@ void Chip8::dumpMemory() const {
 	}
 	std::cout << std::dec << '\n';
 }
+
+uint8_t Chip8::getRandByte() {
+	std::cout << "random byte: " << randByte(rng) << '\n';
+	return static_cast<uint8_t>(randByte(rng));
+}

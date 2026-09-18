@@ -48,7 +48,7 @@ private:
 	uint8_t soundTimer_{};
 
 	std::array<uint8_t, KeyCount> keypad_{};
-	std::array<uint32_t, DisplayWidth* DisplayHeight> display_{};
+	std::array<uint32_t, DisplayWidth * DisplayHeight> display_{};
 	std::mt19937 rng{ std::random_device{}() };
 	std::uniform_int_distribution<int> randByte{ 0, 255U };
 
@@ -59,4 +59,24 @@ public:
 	bool readRom(const std::filesystem::path& romPath);
 	void dumpMemory() const;
 	uint8_t getRandByte();
+
+	//00E0 - CLS
+	//Clear the display.
+	void opcode00E0();
+	
+	// 00EE - RET
+	// Return from a subroutine.
+	void opcode00EE();
+
+	//1nnn - JP addr
+	//Jump to location nnn.
+	void opcode1NNN();
+
+	//2nnn - CALL addr
+	//Call subroutine at nnn.
+	void opcode2NNN();
+
+	//3xkk - SE Vx, byte
+	//Skip next instruction if Vx = kk.
+	void opcode3xkk();
 };

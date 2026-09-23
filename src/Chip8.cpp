@@ -66,6 +66,10 @@ uint8_t Chip8::getRandByte() {
 	return static_cast<uint8_t>(randByte(rng));
 }
 
+void Chip8::jump(uint16_t address) {
+	programCounter_ = address;
+}
+
 void Chip8::opcode00E0() {
 	display_.fill(0);
 }
@@ -75,11 +79,21 @@ void Chip8::opcode00EE() {
 }
 
 void Chip8::opcode1NNN(uint16_t address) {
-	programCounter_ = address;
+	jump(address);
 }
 
 void Chip8::opcode2NNN(uint16_t address) {
 	stack_[stackPointer_++] = programCounter_;
-	opcode1NNN(address);
+	jump(address);
+}
+
+void Chip8::opcode3xkk(uint8_t index, uint8_t val) {
+	if (registers_[index] == val)
+		programCounter_ += 2;
+}
+
+void Chip8::opcode4xkk(uint8_t index, uint8_t val) {
+	if (registers_[index] != val)
+		programCounter_ += 2;
 }
 

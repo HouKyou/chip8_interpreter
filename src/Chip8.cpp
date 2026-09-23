@@ -74,14 +74,12 @@ void Chip8::opcode00EE() {
 	programCounter_ = stack_[--stackPointer_];
 }
 
-void Chip8::opcode1NNN()
-{
+void Chip8::opcode1NNN(uint16_t address) {
+	programCounter_ = address;
 }
 
-void Chip8::opcode2NNN()
-{
+void Chip8::opcode2NNN(uint16_t address) {
+	stack_[stackPointer_++] = programCounter_;
+	opcode1NNN(address);
 }
 
-void Chip8::opcode3xkk()
-{
-}

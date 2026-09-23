@@ -39,7 +39,6 @@ private:
 
 	std::array<uint8_t, RegisterCount> registers_{};
 	std::array<uint8_t, MemorySize> memory_{};
-	uint16_t opcode_{};
 	uint16_t indexRegister_{};
 	uint16_t programCounter_{ StartAddress };
 	std::array<uint16_t, StackSize> stack_{};
@@ -60,6 +59,8 @@ public:
 	void dumpMemory() const;
 	uint8_t getRandByte();
 
+	void jump(uint16_t address);
+
 	//00E0 - CLS
 	//Clear the display.
 	void opcode00E0();
@@ -78,5 +79,9 @@ public:
 
 	//3xkk - SE Vx, byte
 	//Skip next instruction if Vx = kk.
-	void opcode3xkk();
+	void opcode3xkk(uint8_t index, uint8_t val);
+
+	//4xkk - SNE Vx, byte
+	//Skip next instruction if Vx != kk.
+	void opcode4xkk(uint8_t index, uint8_t val);
 };

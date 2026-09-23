@@ -70,11 +70,11 @@ public:
 
 	//1nnn - JP addr
 	//Jump to location nnn.
-	void opcode1NNN();
+	void opcode1NNN(uint16_t address);
 
 	//2nnn - CALL addr
 	//Call subroutine at nnn.
-	void opcode2NNN();
+	void opcode2NNN(uint16_t address);
 
 	//3xkk - SE Vx, byte
 	//Skip next instruction if Vx = kk.

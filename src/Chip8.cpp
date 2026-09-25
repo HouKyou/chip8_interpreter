@@ -168,3 +168,13 @@ void Chip8::opcodeBnnn(uint16_t addr) {
 void Chip8::opcodeCxkk(uint8_t vx, uint8_t val) {
 	registers_[vx] = getRandByte() & val;
 }
+
+void Chip8::opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n) {
+	for (size_t i = vx; i < DisplayHeight; i++) {
+		int bit = 1;
+		for (size_t j = vy; j < vy + n; j++) {
+			size_t displayIdx = i * DisplayHeight + j;
+			display_[i] ^= memory_[indexRegister_] & (0x80);
+		}
+	}
+}

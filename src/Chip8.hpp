@@ -152,5 +152,5 @@ public:
 	//Dxyn - DRW Vx, Vy, nibble
 	//Display n - byte sprite starting at memory location I at(Vx, Vy), 
 	// set VF = collision.
-	void opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t val);
+	void opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n);
 };

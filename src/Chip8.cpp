@@ -7,14 +7,14 @@ Chip8::Chip8() {
 	initialize();
 }
 
-void Chip8::setFonts() {
+void Chip8::setFontsTable() {
 	std::copy(fontTable.begin(),
 		fontTable.end(),
 		memory_.begin() + FontsStartAddress);
 }
 
 void Chip8::initialize() {
-	setFonts();
+	setFontsTable();
 }
 
 bool Chip8::readRom(const std::filesystem::path& romPath) {
@@ -62,12 +62,11 @@ void Chip8::dumpMemory() const {
 }
 
 uint8_t Chip8::getRandByte() {
-	std::cout << "random byte: " << randByte(rng) << '\n';
 	return static_cast<uint8_t>(randByte(rng));
 }
 
-void Chip8::jump(uint16_t address) {
-	programCounter_ = address;
+void Chip8::jump(uint16_t addr) {
+	programCounter_ = addr;
 }
 
 void Chip8::opcode00E0() {
@@ -78,22 +77,94 @@ void Chip8::opcode00EE() {
 	programCounter_ = stack_[--stackPointer_];
 }
 
-void Chip8::opcode1NNN(uint16_t address) {
-	jump(address);
+void Chip8::opcode1nnn(uint16_t addr) {
+	jump(addr);
 }
 
-void Chip8::opcode2NNN(uint16_t address) {
+void Chip8::opcode2nnn(uint16_t addr) {
 	stack_[stackPointer_++] = programCounter_;
-	jump(address);
+	jump(addr);
 }
 
-void Chip8::opcode3xkk(uint8_t index, uint8_t val) {
-	if (registers_[index] == val)
+void Chip8::opcode3xkk(uint8_t vx, uint8_t val) {
+	if (registers_[vx] == val)
 		programCounter_ += 2;
 }
 
-void Chip8::opcode4xkk(uint8_t index, uint8_t val) {
-	if (registers_[index] != val)
+void Chip8::opcode4xkk(uint8_t vx, uint8_t val) {
+	if (registers_[vx] != val)
 		programCounter_ += 2;
 }
 
+void Chip8::opcode5xy0(uint8_t vx, uint8_t vy) {
+	if (registers_[vx] == registers_[vy])
+		programCounter_ += 2;
+}
+
+void Chip8::opcode6xkk(uint8_t vx, uint8_t val) {
+	registers_[vx] = val;
+}
+
+void Chip8::opcode7xkk(uint8_t vx, uint8_t val) {
+	registers_[vx] += val;
+}
+
+void Chip8::opcode8xy0(uint8_t vx, uint8_t vy) {
+	registers_[vx] = registers_[vy];
+}
+
+void Chip8::opcode8xy1(uint8_t vx, uint8_t vy) {
+	registers_[vx] |= registers_[vy];
+}
+
+void Chip8::opcode8xy2(uint8_t vx, uint8_t vy) {
+	registers_[vx] &= registers_[vy];
+}
+
+void Chip8::opcode8xy3(uint8_t vx, uint8_t vy) {
+	registers_[vx] ^= registers_[vy];
+}
+
+void Chip8::opcode8xy4(uint8_t vx, uint8_t vy) {
+	uint16_t sum = registers_[vx] + registers_[vy];
+	registers_[0xF] = (sum > 0xFF);
+	registers_[vx] = sum & 0xFF;
+}
+
+void Chip8::opcode8xy5(uint8_t vx, uint8_t vy) {
+	registers_[0xF] = (registers_[vx] >= registers_[vy]);
+	registers_[vx] -= registers_[vy];
+}
+
+void Chip8::opcode8xy6(uint8_t vx, uint8_t vy) {
+	registers_[0xF] = (registers_[vx] & 0x1);
+	registers_[vx] >>= 1;
+}
+
+void Chip8::opcode8xy7(uint8_t vx, uint8_t vy) {
+	registers_[0xF] = (registers_[vy] >= registers_[vx]);
+	registers_[vx] = registers_[vy] - registers_[vx];
+}
+
+void Chip8::opcode8xyE(uint8_t vx, uint8_t vy) {
+	registers_[0xF] = registers_[vx] >> 7;
+	registers_[vx] <<= 1;
+}
+
+void Chip8::opcode9xy0(uint8_t vx, uint8_t vy) {
+	if (registers_[vx] != registers_[vy]) {
+		programCounter_ += 2;
+	}
+}
+
+void Chip8::opcodeAnnn(uint16_t addr) {
+	indexRegister_ = addr;
+}
+
+void Chip8::opcodeBnnn(uint16_t addr) {
+	jump(addr + registers_[0]);
+}
+
+void Chip8::opcodeCxkk(uint8_t vx, uint8_t val) {
+	registers_[vx] = getRandByte() & val;
+}

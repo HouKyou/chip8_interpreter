@@ -153,4 +153,48 @@ public:
 	//Display n - byte sprite starting at memory location I at(Vx, Vy), 
 	// set VF = collision.
 	void opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n);
+
+	//Ex9E - SKP Vx
+	//Skip next instruction if key with the value of Vx is pressed.
+	void opcodeEx9E(uint8_t vx);
+
+	//ExA1 - SKNP Vx
+	//Skip next instruction if key with the value of Vx is not pressed.
+	void opcodeExA1(uint8_t vx);
+
+	//Fx07 - LD Vx, DT
+	//Set Vx = delay timer value.
+	void opcodeFx07(uint8_t vx);
+
+	//Fx0A - LD Vx, K
+	//Wait for a key press, store the value of the key in Vx.
+	void opcodeFx0A(uint8_t vx);
+
+	//Fx15 - LD DT, Vx
+	//Set delay timer = Vx.
+	void opcodeFx15(uint8_t vx);
+
+	//Fx18 - LD ST, Vx
+	//Set sound timer = Vx.
+	void opcodeFx18(uint8_t vx);
+	
+	//Fx1E - ADD I, Vx
+	//Set I = I + Vx.
+	void opcodeFx1E(uint8_t vx);
+
+	//Fx29 - LD F, Vx
+	//Set I = location of sprite for digit Vx.
+	void opcodeFx29(uint8_t vx);
+
+	//Fx33 - LD B, Vx
+	//Store BCD representation of Vx in memory locations I, I + 1, and I + 2.
+	void opcodeFx33(uint8_t vx);
+
+	//Fx55 - LD[I], Vx
+	//Store registers V0 through Vx in memory starting at location I.
+	void opcodeFx55(uint8_t vx);
+
+	//Fx65 - LD Vx, [I]
+	//Read registers V0 through Vx from memory starting at location I.
+	void opcodeFx65(uint8_t vx);
 };

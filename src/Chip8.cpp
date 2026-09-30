@@ -126,7 +126,7 @@ void Chip8::opcode8xy3(uint8_t vx, uint8_t vy) {
 }
 
 void Chip8::opcode8xy4(uint8_t vx, uint8_t vy) {
-	uint16_t sum = registers_[vx] + registers_[vy];
+	const uint16_t sum = registers_[vx] + registers_[vy];
 	registers_[0xF] = (sum > 0xFF);
 	registers_[vx] = sum & 0xFF;
 }
@@ -170,11 +170,60 @@ void Chip8::opcodeCxkk(uint8_t vx, uint8_t val) {
 }
 
 void Chip8::opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n) {
-	for (size_t i = vx; i < DisplayHeight; i++) {
-		int bit = 1;
-		for (size_t j = vy; j < vy + n; j++) {
-			size_t displayIdx = i * DisplayHeight + j;
-			display_[i] ^= memory_[indexRegister_] & (0x80);
+	registers_[0xF] = 0;
+	const uint8_t x = registers_[vx];
+	const uint8_t y = registers_[vy];
+
+	for (int row = 0; row < n; ++row) {
+		const uint8_t spriteByte = memory_[indexRegister_ + row];
+		for (int col = 0; col < 8; ++col) {
+			const uint8_t spriteBit = (spriteByte >> (7 - col)) & 0x1;
+			if (!spriteBit) continue;
+			
+			const size_t px = (x + col) % DisplayWidth;
+			const size_t py = (y + row) % DisplayHeight;
+ 			const size_t index = py * DisplayWidth + px;
+			if (display_[index]) 
+				registers_[0xF] = 1;
+			display_[index] ^= 1;
 		}
 	}
 }
+
+void Chip8::opcodeEx9E(uint8_t vx) {
+	if (keypad_[registers_[vx] & 0xF])
+		programCounter_ += 2;
+}
+
+void Chip8::opcodeExA1(uint8_t vx) {
+	if (!keypad_[registers_[vx] & 0xF])
+		programCounter_ += 2;
+}
+
+void Chip8::opcodeFx07(uint8_t vx) {
+	registers_[vx] = delayTimer_;
+}
+
+void Chip8::opcodeFx0A(uint8_t vx) {
+	for (size_t i = 0; i < 16; i++) {
+		if (keypad_[i]) {
+			registers_[vx] = i;
+			return;
+		}
+	}
+	programCounter_ -= 2;
+}
+
+void Chip8::opcodeFx15(uint8_t vx) {
+	delayTimer_ = registers_[vx];
+}
+
+void Chip8::opcodeFx18(uint8_t vx) {
+	soundTimer_ = registers_[vx];
+}
+
+void Chip8::opcodeFx1E(uint8_t vx) {
+	
+}
+
+

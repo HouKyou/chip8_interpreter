@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 Chip8::Chip8() {
 	initialize();
@@ -14,6 +15,18 @@ void Chip8::setFontsTable() {
 }
 
 void Chip8::initialize() {
+	registers_.fill(0);
+	memory_.fill(0);
+	stack_.fill(0);
+	keypad_.fill(0);
+	display_.fill(0);
+
+	indexRegister_ = 0;
+	programCounter_ = StartAddress;
+	stackPointer_ = 0;
+	delayTimer_ = 0;
+	soundTimer_ = 0;
+
 	setFontsTable();
 }
 
@@ -21,12 +34,12 @@ bool Chip8::readRom(const std::filesystem::path& romPath) {
 	std::ifstream file(romPath, std::ios::binary | std::ios::ate);
 	if (!file) {
 		std::cerr << "Failed to open ROM" << '\n';
-		return 1;
+		return false;
 	}
 	const std::size_t romSize = static_cast<std::size_t>(file.tellg());
 	if (romSize > MemorySize - StartAddress) {
 		std::cerr << "Not enough memory for " << romPath.filename() << '\n';
-		return 1;
+		return false;
 	}
 	std::cout << "Loading rom: " << romPath.filename().string() << '\n';
 	std::cout << "Size: " << romSize << '\n';
@@ -36,9 +49,9 @@ bool Chip8::readRom(const std::filesystem::path& romPath) {
 		static_cast<std::streamsize>(romSize));
 	if (!file) {
 		std::cerr << "Failed to read ROM" << '\n';
-		return 1;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
 void Chip8::dumpMemory() const {
@@ -74,6 +87,7 @@ void Chip8::opcode00E0() {
 }
 
 void Chip8::opcode00EE() {
+	assert(stackPointer_ > 0);
 	programCounter_ = stack_[--stackPointer_];
 }
 
@@ -82,6 +96,7 @@ void Chip8::opcode1nnn(uint16_t addr) {
 }
 
 void Chip8::opcode2nnn(uint16_t addr) {
+	assert(stackPointer_ < stack_.size());
 	stack_[stackPointer_++] = programCounter_;
 	jump(addr);
 }
@@ -174,9 +189,9 @@ void Chip8::opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n) {
 	const uint8_t x = registers_[vx];
 	const uint8_t y = registers_[vy];
 
-	for (int row = 0; row < n; ++row) {
+	for (uint8_t row = 0; row < n; ++row) {
 		const uint8_t spriteByte = memory_[indexRegister_ + row];
-		for (int col = 0; col < 8; ++col) {
+		for (uint8_t col = 0; col < 8; ++col) {
 			const uint8_t spriteBit = (spriteByte >> (7 - col)) & 0x1;
 			if (!spriteBit) continue;
 			
@@ -205,7 +220,7 @@ void Chip8::opcodeFx07(uint8_t vx) {
 }
 
 void Chip8::opcodeFx0A(uint8_t vx) {
-	for (size_t i = 0; i < 16; i++) {
+	for (size_t i = 0; i < 16; ++i) {
 		if (keypad_[i]) {
 			registers_[vx] = i;
 			return;
@@ -223,7 +238,28 @@ void Chip8::opcodeFx18(uint8_t vx) {
 }
 
 void Chip8::opcodeFx1E(uint8_t vx) {
-	
+	indexRegister_ += registers_[vx];
 }
 
+void Chip8::opcodeFx29(uint8_t vx) {
+	indexRegister_ = registers_[vx] * 5 + FontsStartAddress;
+}
 
+void Chip8::opcodeFx33(uint8_t vx) {
+	const uint8_t val =  registers_[vx];
+	memory_[indexRegister_] = val / 100;
+	memory_[indexRegister_ + 1] = val / 10 % 10;
+	memory_[indexRegister_ + 2] = val % 10;
+}
+
+void Chip8::opcodeFx55(uint8_t vx) {
+	for (uint8_t i = 0; i <= vx; ++i) {
+		memory_[indexRegister_ + i] = registers_[i];
+	}
+}
+
+void Chip8::opcodeFx65(uint8_t vx) {
+	for (uint8_t i = 0; i <= vx; ++i) {
+		registers_[i] = memory_[indexRegister_ + i];
+	}
+}

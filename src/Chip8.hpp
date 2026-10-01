@@ -17,7 +17,6 @@ private:
 	static constexpr std::size_t DisplayHeight = 32;
 	static constexpr std::size_t FontTableSize = 80;
 	static constexpr std::size_t FontsStartAddress = 0x50;
-
 	static constexpr std::array<uint8_t, FontTableSize> fontTable = {
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -39,15 +38,16 @@ private:
 
 	std::array<uint8_t, RegisterCount> registers_{};
 	std::array<uint8_t, MemorySize> memory_{};
+	std::array<uint16_t, StackSize> stack_{};
+	std::array<uint8_t, KeyCount> keypad_{};
+	std::array<uint32_t, DisplayWidth* DisplayHeight> display_{};
+
 	uint16_t indexRegister_{};
 	uint16_t programCounter_{ StartAddress };
-	std::array<uint16_t, StackSize> stack_{};
 	uint8_t stackPointer_{};
 	uint8_t delayTimer_{};
 	uint8_t soundTimer_{};
 
-	std::array<uint8_t, KeyCount> keypad_{};
-	std::array<uint32_t, DisplayWidth * DisplayHeight> display_{};
 	std::mt19937 rng{ std::random_device{}() };
 	std::uniform_int_distribution<int> randByte{ 0, 255U };
 

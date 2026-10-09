@@ -6,6 +6,11 @@
 
 Chip8::Chip8() {
 	initialize();
+	setupDispatchTable();
+}
+
+void Chip8::setupDispatchTable() {
+
 }
 
 void Chip8::setFontsTable() {
@@ -23,6 +28,7 @@ void Chip8::initialize() {
 
 	indexRegister_ = 0;
 	programCounter_ = StartAddress;
+	opcode_ = 0;
 	stackPointer_ = 0;
 	delayTimer_ = 0;
 	soundTimer_ = 0;
@@ -80,6 +86,9 @@ uint8_t Chip8::getRandByte() {
 
 void Chip8::jump(uint16_t addr) {
 	programCounter_ = addr;
+}
+
+void Chip8::opcodeNull() {
 }
 
 void Chip8::opcode00E0() {

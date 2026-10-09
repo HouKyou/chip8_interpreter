@@ -44,6 +44,7 @@ private:
 
 	uint16_t indexRegister_{};
 	uint16_t programCounter_{ StartAddress };
+	uint16_t opcode_{};
 	uint8_t stackPointer_{};
 	uint8_t delayTimer_{};
 	uint8_t soundTimer_{};
@@ -60,6 +61,17 @@ public:
 	uint8_t getRandByte();
 
 	void jump(uint16_t addr);
+
+	using opcodeFunc = void (Chip8::*)();
+	std::array<opcodeFunc, 0xF + 1>  table;
+	std::array<opcodeFunc, 0xE + 1>  table0;
+	std::array<opcodeFunc, 0xE + 1>  table8;
+	std::array<opcodeFunc, 0xE + 1>  tableE;
+	std::array<opcodeFunc, 0x65 + 1>  tableF;
+
+	void setupDispatchTable();
+
+	void opcodeNull();
 
 	//00E0 - CLS
 	//Clear the display.

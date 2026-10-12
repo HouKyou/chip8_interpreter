@@ -88,8 +88,27 @@ void Chip8::jump(uint16_t addr) {
 	programCounter_ = addr;
 }
 
-void Chip8::opcodeNull() {
+uint16_t Chip8::decodeNNN() const {
+	return opcode_ & 0x0FFF;
 }
+
+uint8_t Chip8::decodeN() const {
+	return opcode_ & 0x000F;
+}
+
+uint8_t Chip8::decodeX() const {
+	return (opcode_ & 0x0F00) >> 8;
+}
+
+uint8_t Chip8::decodeY() const {
+	return (opcode_ & 0x00F0) >> 4;
+}
+
+uint8_t Chip8::decodeKK() const {
+	return opcode_ & 0x00FF;
+}
+
+void Chip8::opcodeNull() {}
 
 void Chip8::opcode00E0() {
 	display_.fill(0);
@@ -100,112 +119,153 @@ void Chip8::opcode00EE() {
 	programCounter_ = stack_[--stackPointer_];
 }
 
-void Chip8::opcode1nnn(uint16_t addr) {
+void Chip8::opcode1nnn() {
+	const uint16_t addr = decodeNNN();
 	jump(addr);
 }
 
-void Chip8::opcode2nnn(uint16_t addr) {
+void Chip8::opcode2nnn() {
 	assert(stackPointer_ < stack_.size());
 	stack_[stackPointer_++] = programCounter_;
+	const uint16_t addr = decodeNNN();
 	jump(addr);
 }
 
-void Chip8::opcode3xkk(uint8_t vx, uint8_t val) {
-	if (registers_[vx] == val)
+void Chip8::opcode3xkk() {
+	const uint8_t x = decodeX();
+	const uint8_t kk = decodeKK();
+	if (registers_[x] == kk)
 		programCounter_ += 2;
 }
 
-void Chip8::opcode4xkk(uint8_t vx, uint8_t val) {
-	if (registers_[vx] != val)
+void Chip8::opcode4xkk() {
+	const uint8_t x = decodeX();
+	const uint8_t kk = decodeKK();
+	if (registers_[x] != kk)
 		programCounter_ += 2;
 }
 
-void Chip8::opcode5xy0(uint8_t vx, uint8_t vy) {
-	if (registers_[vx] == registers_[vy])
+void Chip8::opcode5xy0() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	if (registers_[x] == registers_[y])
 		programCounter_ += 2;
 }
 
-void Chip8::opcode6xkk(uint8_t vx, uint8_t val) {
-	registers_[vx] = val;
+void Chip8::opcode6xkk() {
+	const uint8_t x = decodeX();
+	const uint8_t kk = decodeKK();
+	registers_[x] = kk;
 }
 
-void Chip8::opcode7xkk(uint8_t vx, uint8_t val) {
-	registers_[vx] += val;
+void Chip8::opcode7xkk() {
+	const uint8_t x = decodeX();
+	const uint8_t kk = decodeKK();
+	registers_[x] += kk;
 }
 
-void Chip8::opcode8xy0(uint8_t vx, uint8_t vy) {
-	registers_[vx] = registers_[vy];
+void Chip8::opcode8xy0() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[x] = registers_[y];
 }
 
-void Chip8::opcode8xy1(uint8_t vx, uint8_t vy) {
-	registers_[vx] |= registers_[vy];
+void Chip8::opcode8xy1() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[x] |= registers_[y];
 }
 
-void Chip8::opcode8xy2(uint8_t vx, uint8_t vy) {
-	registers_[vx] &= registers_[vy];
+void Chip8::opcode8xy2() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[x] &= registers_[y];
 }
 
-void Chip8::opcode8xy3(uint8_t vx, uint8_t vy) {
-	registers_[vx] ^= registers_[vy];
+void Chip8::opcode8xy3() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[x] ^= registers_[y];
 }
 
-void Chip8::opcode8xy4(uint8_t vx, uint8_t vy) {
-	const uint16_t sum = registers_[vx] + registers_[vy];
+void Chip8::opcode8xy4() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	const uint16_t sum = registers_[x] + registers_[y];
 	registers_[0xF] = (sum > 0xFF);
-	registers_[vx] = sum & 0xFF;
+	registers_[x] = sum & 0xFF;
 }
 
-void Chip8::opcode8xy5(uint8_t vx, uint8_t vy) {
-	registers_[0xF] = (registers_[vx] >= registers_[vy]);
-	registers_[vx] -= registers_[vy];
+void Chip8::opcode8xy5() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[0xF] = (registers_[x] >= registers_[y]);
+	registers_[x] -= registers_[y];
 }
 
-void Chip8::opcode8xy6(uint8_t vx, uint8_t vy) {
-	registers_[0xF] = (registers_[vx] & 0x1);
-	registers_[vx] >>= 1;
+void Chip8::opcode8xy6() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[0xF] = (registers_[x] & 0x1);
+	registers_[x] >>= 1;
 }
 
-void Chip8::opcode8xy7(uint8_t vx, uint8_t vy) {
-	registers_[0xF] = (registers_[vy] >= registers_[vx]);
-	registers_[vx] = registers_[vy] - registers_[vx];
+void Chip8::opcode8xy7() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[0xF] = (registers_[y] >= registers_[x]);
+	registers_[x] = registers_[y] - registers_[x];
 }
 
-void Chip8::opcode8xyE(uint8_t vx, uint8_t vy) {
-	registers_[0xF] = registers_[vx] >> 7;
-	registers_[vx] <<= 1;
+void Chip8::opcode8xyE() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	registers_[0xF] = registers_[x] >> 7;
+	registers_[x] <<= 1;
 }
 
-void Chip8::opcode9xy0(uint8_t vx, uint8_t vy) {
-	if (registers_[vx] != registers_[vy]) {
+void Chip8::opcode9xy0() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	if (registers_[x] != registers_[y]) {
 		programCounter_ += 2;
 	}
 }
 
-void Chip8::opcodeAnnn(uint16_t addr) {
+void Chip8::opcodeAnnn() {
+	const uint16_t addr = decodeNNN();
 	indexRegister_ = addr;
 }
 
-void Chip8::opcodeBnnn(uint16_t addr) {
+void Chip8::opcodeBnnn() {
+	const uint16_t addr = decodeNNN();
 	jump(addr + registers_[0]);
 }
 
-void Chip8::opcodeCxkk(uint8_t vx, uint8_t val) {
-	registers_[vx] = getRandByte() & val;
+void Chip8::opcodeCxkk() {
+	const uint8_t x = decodeX();
+	const uint8_t kk = decodeKK();
+	registers_[x] = getRandByte() & kk;
 }
 
-void Chip8::opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n) {
+void Chip8::opcodeDxyn() {
+	const uint8_t x = decodeX();
+	const uint8_t y = decodeY();
+	const uint8_t n = decodeN();
+
+	const uint8_t vx = registers_[x];
+	const uint8_t vy = registers_[y];
 	registers_[0xF] = 0;
-	const uint8_t x = registers_[vx];
-	const uint8_t y = registers_[vy];
 
 	for (uint8_t row = 0; row < n; ++row) {
+		assert(indexRegister_ + row < MemorySize);
 		const uint8_t spriteByte = memory_[indexRegister_ + row];
 		for (uint8_t col = 0; col < 8; ++col) {
 			const uint8_t spriteBit = (spriteByte >> (7 - col)) & 0x1;
 			if (!spriteBit) continue;
 			
-			const size_t px = (x + col) % DisplayWidth;
-			const size_t py = (y + row) % DisplayHeight;
+			const size_t px = (vx + col) % DisplayWidth;
+			const size_t py = (vy + row) % DisplayHeight;
  			const size_t index = py * DisplayWidth + px;
 			if (display_[index]) 
 				registers_[0xF] = 1;
@@ -214,61 +274,75 @@ void Chip8::opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n) {
 	}
 }
 
-void Chip8::opcodeEx9E(uint8_t vx) {
-	if (keypad_[registers_[vx] & 0xF])
+void Chip8::opcodeEx9E() {
+	const uint8_t x = decodeX();
+	if (keypad_[registers_[x] & 0xF])
 		programCounter_ += 2;
 }
 
-void Chip8::opcodeExA1(uint8_t vx) {
-	if (!keypad_[registers_[vx] & 0xF])
+void Chip8::opcodeExA1() {
+	const uint8_t x = decodeX();
+	if (!keypad_[registers_[x] & 0xF])
 		programCounter_ += 2;
 }
 
-void Chip8::opcodeFx07(uint8_t vx) {
-	registers_[vx] = delayTimer_;
+void Chip8::opcodeFx07() {
+	const uint8_t x = decodeX();
+	registers_[x] = delayTimer_;
 }
 
-void Chip8::opcodeFx0A(uint8_t vx) {
+void Chip8::opcodeFx0A() {
+	const uint8_t x = decodeX();
 	for (size_t i = 0; i < 16; ++i) {
 		if (keypad_[i]) {
-			registers_[vx] = i;
+			registers_[x] = i;
 			return;
 		}
 	}
 	programCounter_ -= 2;
 }
 
-void Chip8::opcodeFx15(uint8_t vx) {
-	delayTimer_ = registers_[vx];
+void Chip8::opcodeFx15() {
+	const uint8_t x = decodeX();
+	delayTimer_ = registers_[x];
 }
 
-void Chip8::opcodeFx18(uint8_t vx) {
-	soundTimer_ = registers_[vx];
+void Chip8::opcodeFx18() {
+	const uint8_t x = decodeX();
+	soundTimer_ = registers_[x];
 }
 
-void Chip8::opcodeFx1E(uint8_t vx) {
-	indexRegister_ += registers_[vx];
+void Chip8::opcodeFx1E() {
+	const uint8_t x = decodeX();
+	indexRegister_ += registers_[x];
 }
 
-void Chip8::opcodeFx29(uint8_t vx) {
-	indexRegister_ = registers_[vx] * 5 + FontsStartAddress;
+void Chip8::opcodeFx29() {
+	const uint8_t x = decodeX();
+	indexRegister_ = registers_[x] * 5 + FontsStartAddress;
 }
 
-void Chip8::opcodeFx33(uint8_t vx) {
-	const uint8_t val =  registers_[vx];
-	memory_[indexRegister_] = val / 100;
-	memory_[indexRegister_ + 1] = val / 10 % 10;
-	memory_[indexRegister_ + 2] = val % 10;
+void Chip8::opcodeFx33() {
+	assert(indexRegister_ + 2 < MemorySize);
+	const uint8_t x = decodeX();
+	const uint8_t vx =  registers_[x];
+	memory_[indexRegister_] = vx / 100;
+	memory_[indexRegister_ + 1] = vx / 10 % 10;
+	memory_[indexRegister_ + 2] = vx % 10;
 }
 
-void Chip8::opcodeFx55(uint8_t vx) {
-	for (uint8_t i = 0; i <= vx; ++i) {
+void Chip8::opcodeFx55() {
+	const uint8_t x = decodeX();
+	assert(indexRegister_ + x < MemorySize);
+	for (uint8_t i = 0; i <= x; ++i) {
 		memory_[indexRegister_ + i] = registers_[i];
 	}
 }
 
-void Chip8::opcodeFx65(uint8_t vx) {
-	for (uint8_t i = 0; i <= vx; ++i) {
+void Chip8::opcodeFx65() {
+	const uint8_t x = decodeX();
+	assert(indexRegister_ + x < MemorySize);
+	for (uint8_t i = 0; i <= x; ++i) {
 		registers_[i] = memory_[indexRegister_ + i];
 	}
 }

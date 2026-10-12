@@ -71,6 +71,12 @@ public:
 
 	void setupDispatchTable();
 
+	uint16_t decodeNNN() const;
+	uint8_t decodeN() const;
+	uint8_t decodeX() const;
+	uint8_t decodeY() const;
+	uint8_t decodeKK() const;
+
 	void opcodeNull();
 
 	//00E0 - CLS
@@ -83,130 +89,130 @@ public:
 
 	//1nnn - JP addr
 	//Jump to location nnn.
-	void opcode1nnn(uint16_t addr);
+	void opcode1nnn();
 
 	//2nnn - CALL addr
 	//Call subroutine at nnn.
-	void opcode2nnn(uint16_t addr);
+	void opcode2nnn();
 
 	//3xkk - SE Vx, byte
 	//Skip next instruction if Vx = kk.
-	void opcode3xkk(uint8_t vx, uint8_t val);
+	void opcode3xkk();
 
 	//4xkk - SNE Vx, byte
 	//Skip next instruction if Vx != kk.
-	void opcode4xkk(uint8_t vx, uint8_t val);
+	void opcode4xkk();
 
 	//5xy0 - SE Vx, Vy
 	//Skip next instruction if Vx = Vy.
-	void opcode5xy0(uint8_t vx, uint8_t vy);
+	void opcode5xy0();
 
 	//6xkk - LD Vx, byte
 	//Set Vx = kk.
-	void opcode6xkk(uint8_t vx, uint8_t val);
+	void opcode6xkk();
 
 	//7xkk - ADD Vx, byte
 	//Set Vx = Vx + kk.
-	void opcode7xkk(uint8_t vx, uint8_t val);
+	void opcode7xkk();
 	
 	//8xy0 - LD Vx, Vy
 	//Set Vx = Vy.
-	void opcode8xy0(uint8_t vx, uint8_t vy);
+	void opcode8xy0();
 
 	//8xy1 - OR Vx, Vy
 	//Set Vx = Vx OR Vy.
-	void opcode8xy1(uint8_t vx, uint8_t vy);
+	void opcode8xy1();
 
 	//8xy2 - AND Vx, Vy
 	//Set Vx = Vx AND Vy.
-	void opcode8xy2(uint8_t vx, uint8_t vy);
+	void opcode8xy2();
 
 	//8xy3 - XOR Vx, Vy
 	//Set Vx = Vx XOR Vy.
-	void opcode8xy3(uint8_t vx, uint8_t vy);
+	void opcode8xy3();
 
     //8xy4 - ADD Vx, Vy
     //Set Vx = Vx + Vy, set VF = carry.
-	void opcode8xy4(uint8_t vx, uint8_t vy);
+	void opcode8xy4();
     
     //8xy5 - SUB Vx, Vy
     //Set Vx = Vx - Vy, set VF = NOT borrow.
-	void opcode8xy5(uint8_t vx, uint8_t vy);
+	void opcode8xy5();
 
     //8xy6 - SHR Vx {, Vy}
     //8Set Vx = Vx SHR 1.
-	void opcode8xy6(uint8_t vx, uint8_t vy);
+	void opcode8xy6();
 
     //8xy7 - SUBN Vx, Vy
     //Set Vx = Vy - Vx, set VF = NOT borrow.
-	void opcode8xy7(uint8_t vx, uint8_t vy);
+	void opcode8xy7();
 
     //8xyE - SHL Vx {, Vy}
     //Set Vx = Vx SHL 1.
-	void opcode8xyE(uint8_t vx, uint8_t vy);
+	void opcode8xyE();
 
 	//9xy0 - SNE Vx, Vy
 	//Skip next instruction if Vx != Vy.
-	void opcode9xy0(uint8_t vx, uint8_t vy);
+	void opcode9xy0();
 
 	//Annn - LD I, addr
 	//Set I = nnn.
-	void opcodeAnnn(uint16_t addr);
+	void opcodeAnnn();
 
 	//Bnnn - JP V0, addr
 	//Jump to location nnn + V0.
-	void opcodeBnnn(uint16_t addr);
+	void opcodeBnnn();
 
 	//Cxkk - RND Vx, byte
 	//Set Vx = random byte AND kk.
-	void opcodeCxkk(uint8_t vx, uint8_t val);
+	void opcodeCxkk();
 
 	//Dxyn - DRW Vx, Vy, nibble
 	//Display n - byte sprite starting at memory location I at(Vx, Vy), 
 	// set VF = collision.
-	void opcodeDxyn(uint8_t vx, uint8_t vy, uint8_t n);
+	void opcodeDxyn();
 
 	//Ex9E - SKP Vx
 	//Skip next instruction if key with the value of Vx is pressed.
-	void opcodeEx9E(uint8_t vx);
+	void opcodeEx9E();
 
 	//ExA1 - SKNP Vx
 	//Skip next instruction if key with the value of Vx is not pressed.
-	void opcodeExA1(uint8_t vx);
+	void opcodeExA1();
 
 	//Fx07 - LD Vx, DT
 	//Set Vx = delay timer value.
-	void opcodeFx07(uint8_t vx);
+	void opcodeFx07();
 
 	//Fx0A - LD Vx, K
 	//Wait for a key press, store the value of the key in Vx.
-	void opcodeFx0A(uint8_t vx);
+	void opcodeFx0A();
 
 	//Fx15 - LD DT, Vx
 	//Set delay timer = Vx.
-	void opcodeFx15(uint8_t vx);
+	void opcodeFx15();
 
 	//Fx18 - LD ST, Vx
 	//Set sound timer = Vx.
-	void opcodeFx18(uint8_t vx);
+	void opcodeFx18();
 	
 	//Fx1E - ADD I, Vx
 	//Set I = I + Vx.
-	void opcodeFx1E(uint8_t vx);
+	void opcodeFx1E();
 
 	//Fx29 - LD F, Vx
 	//Set I = location of sprite for digit Vx.
-	void opcodeFx29(uint8_t vx);
+	void opcodeFx29();
 
 	//Fx33 - LD B, Vx
 	//Store BCD representation of Vx in memory locations I, I + 1, and I + 2.
-	void opcodeFx33(uint8_t vx);
+	void opcodeFx33();
 
 	//Fx55 - LD[I], Vx
 	//Store registers V0 through Vx in memory starting at location I.
-	void opcodeFx55(uint8_t vx);
+	void opcodeFx55();
 
 	//Fx65 - LD Vx, [I]
 	//Read registers V0 through Vx from memory starting at location I.
-	void opcodeFx65(uint8_t vx);
+	void opcodeFx65();
 };

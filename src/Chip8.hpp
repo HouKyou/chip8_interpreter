@@ -6,76 +6,41 @@
 #include <random>
 
 class Chip8 {
-private:
-
-	static constexpr std::size_t RegisterCount = 16;
-	static constexpr std::size_t MemorySize = 4096;
-	static constexpr std::size_t StackSize = 16;
-	static constexpr uint16_t StartAddress = 0x200;
-	static constexpr std::size_t KeyCount = 16;
-	static constexpr std::size_t DisplayWidth = 64;
-	static constexpr std::size_t DisplayHeight = 32;
-	static constexpr std::size_t FontTableSize = 80;
-	static constexpr std::size_t FontsStartAddress = 0x50;
-	static constexpr std::array<uint8_t, FontTableSize> fontTable = {
-		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-		0x20, 0x60, 0x20, 0x20, 0x70, // 1
-		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-		0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-		0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-		0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-		0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-		0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-	};
-
-	std::array<uint8_t, RegisterCount> registers_{};
-	std::array<uint8_t, MemorySize> memory_{};
-	std::array<uint16_t, StackSize> stack_{};
-	std::array<uint8_t, KeyCount> keypad_{};
-	std::array<uint32_t, DisplayWidth* DisplayHeight> display_{};
-
-	uint16_t indexRegister_{};
-	uint16_t programCounter_{ StartAddress };
-	uint16_t opcode_{};
-	uint8_t stackPointer_{};
-	uint8_t delayTimer_{};
-	uint8_t soundTimer_{};
-
-	std::mt19937 rng{ std::random_device{}() };
-	std::uniform_int_distribution<int> randByte{ 0, 255U };
-
 public:
 	Chip8();
-	void initialize();
-	void setFontsTable();
+	void cpuCycle();
+	void cpuFetch();
+
 	bool readRom(const std::filesystem::path& romPath);
 	void dumpMemory() const;
-	uint8_t getRandByte();
+	const auto& display() { return display_; }
+	auto& keypad() { return keypad_; }
+	void updateTimers();
 
-	void jump(uint16_t addr);
+	void initialize();
+	void setFontsTable();
 
 	using opcodeFunc = void (Chip8::*)();
 	std::array<opcodeFunc, 0xF + 1>  table;
-	std::array<opcodeFunc, 0xE + 1>  table0;
-	std::array<opcodeFunc, 0xE + 1>  table8;
-	std::array<opcodeFunc, 0xE + 1>  tableE;
-	std::array<opcodeFunc, 0x65 + 1>  tableF;
+	std::array<opcodeFunc, 0xFF + 1>  table0;
+	std::array<opcodeFunc, 0xF + 1>  table8;
+	std::array<opcodeFunc, 0xFF + 1>  tableE;
+	std::array<opcodeFunc, 0xFF + 1>  tableF;
 
 	void setupDispatchTable();
+	void tableDispatch();
+	void table0Dispatch();
+	void table8Dispatch();
+	void tableEDispatch();
+	void tableFDispatch();
 
 	uint16_t decodeNNN() const;
 	uint8_t decodeN() const;
 	uint8_t decodeX() const;
 	uint8_t decodeY() const;
 	uint8_t decodeKK() const;
+	void jump(uint16_t addr);
+	uint8_t getRandByte();
 
 	void opcodeNull();
 
@@ -215,4 +180,50 @@ public:
 	//Fx65 - LD Vx, [I]
 	//Read registers V0 through Vx from memory starting at location I.
 	void opcodeFx65();
+
+private:
+	static constexpr std::size_t RegisterCount = 16;
+	static constexpr std::size_t MemorySize = 4096;
+	static constexpr std::size_t StackSize = 16;
+	static constexpr uint16_t StartAddress = 0x200;
+	static constexpr std::size_t KeyCount = 16;
+	static constexpr std::size_t DisplayWidth = 64;
+	static constexpr std::size_t DisplayHeight = 32;
+	static constexpr std::size_t FontTableSize = 80;
+	static constexpr std::size_t FontsStartAddress = 0x50;
+	static constexpr std::array<uint8_t, FontTableSize> fontTable = {
+		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+		0x20, 0x60, 0x20, 0x20, 0x70, // 1
+		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+		0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+		0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+		0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+		0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+		0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+		0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+		0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+		0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+		0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+		0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+		0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+		0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+		0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+	};
+
+	std::array<uint8_t, RegisterCount> registers_{};
+	std::array<uint8_t, MemorySize> memory_{};
+	std::array<uint16_t, StackSize> stack_{};
+	std::array<uint8_t, KeyCount> keypad_{};
+	std::array<uint8_t, DisplayWidth* DisplayHeight> display_{};
+
+	uint16_t indexRegister_{};
+	uint16_t programCounter_{ StartAddress };
+	uint16_t opcode_{};
+	uint8_t stackPointer_{};
+	uint8_t delayTimer_{};
+	uint8_t soundTimer_{};
+	bool drawFlag_{ false };
+
+	std::mt19937 rng{ std::random_device{}() };
+	std::uniform_int_distribution<int> randByte{ 0, 255U };
 };

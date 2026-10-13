@@ -9,31 +9,16 @@ Chip8::Chip8() {
 	setupDispatchTable();
 }
 
-void Chip8::setupDispatchTable() {
-
+void Chip8::cpuCycle() {
+	assert(programCounter_ + 1 < MemorySize);
+	cpuFetch();
+	tableDispatch();
+	
 }
 
-void Chip8::setFontsTable() {
-	std::copy(fontTable.begin(),
-		fontTable.end(),
-		memory_.begin() + FontsStartAddress);
-}
-
-void Chip8::initialize() {
-	registers_.fill(0);
-	memory_.fill(0);
-	stack_.fill(0);
-	keypad_.fill(0);
-	display_.fill(0);
-
-	indexRegister_ = 0;
-	programCounter_ = StartAddress;
-	opcode_ = 0;
-	stackPointer_ = 0;
-	delayTimer_ = 0;
-	soundTimer_ = 0;
-
-	setFontsTable();
+void Chip8::cpuFetch() {
+	opcode_ = memory_[programCounter_] << 8 | memory_[programCounter_ + 1];
+	programCounter_ += 2;
 }
 
 bool Chip8::readRom(const std::filesystem::path& romPath) {
@@ -80,12 +65,103 @@ void Chip8::dumpMemory() const {
 	std::cout << std::dec << '\n';
 }
 
-uint8_t Chip8::getRandByte() {
-	return static_cast<uint8_t>(randByte(rng));
+void Chip8::updateTimers() {
+	if (delayTimer_ > 0) --delayTimer_;
+	if (soundTimer_ > 0) --soundTimer_;
 }
 
-void Chip8::jump(uint16_t addr) {
-	programCounter_ = addr;
+void Chip8::initialize() {
+	registers_.fill(0);
+	memory_.fill(0);
+	stack_.fill(0);
+	keypad_.fill(0);
+	display_.fill(0);
+
+	indexRegister_ = 0;
+	programCounter_ = StartAddress;
+	opcode_ = 0;
+	stackPointer_ = 0;
+	delayTimer_ = 0;
+	soundTimer_ = 0;
+
+	setFontsTable();
+}
+
+void Chip8::setFontsTable() {
+	std::copy(fontTable.begin(),
+		fontTable.end(),
+		memory_.begin() + FontsStartAddress);
+}
+
+void Chip8::setupDispatchTable() {
+	table.fill(&Chip8::opcodeNull);
+	table0.fill(&Chip8::opcodeNull);
+	table8.fill(&Chip8::opcodeNull);
+	tableE.fill(&Chip8::opcodeNull);
+	tableF.fill(&Chip8::opcodeNull);
+
+	table[0x0] = &Chip8::table0Dispatch;
+	table[0x1] = &Chip8::opcode1nnn;
+	table[0x2] = &Chip8::opcode2nnn;
+	table[0x3] = &Chip8::opcode3xkk;
+	table[0x4] = &Chip8::opcode4xkk;
+	table[0x5] = &Chip8::opcode5xy0;
+	table[0x6] = &Chip8::opcode6xkk;
+	table[0x7] = &Chip8::opcode7xkk;
+	table[0x8] = &Chip8::table8Dispatch;
+	table[0x9] = &Chip8::opcode9xy0;
+	table[0xA] = &Chip8::opcodeAnnn;
+	table[0xB] = &Chip8::opcodeBnnn;
+	table[0xC] = &Chip8::opcodeCxkk;
+	table[0xD] = &Chip8::opcodeDxyn;
+	table[0xE] = &Chip8::tableEDispatch;
+	table[0xF] = &Chip8::tableFDispatch;
+
+	table0[0xE0] = &Chip8::opcode00E0;
+	table0[0xEE] = &Chip8::opcode00EE;
+
+	table8[0x0] = &Chip8::opcode8xy0;
+	table8[0x1] = &Chip8::opcode8xy1;
+	table8[0x2] = &Chip8::opcode8xy2;
+	table8[0x3] = &Chip8::opcode8xy3;
+	table8[0x4] = &Chip8::opcode8xy4;
+	table8[0x5] = &Chip8::opcode8xy5;
+	table8[0x6] = &Chip8::opcode8xy6;
+	table8[0x7] = &Chip8::opcode8xy7;
+	table8[0xE] = &Chip8::opcode8xyE;
+
+	tableE[0xA1] = &Chip8::opcodeExA1;
+	tableE[0x9E] = &Chip8::opcodeEx9E;
+
+	tableF[0x07] = &Chip8::opcodeFx07;
+	tableF[0x0A] = &Chip8::opcodeFx0A;
+	tableF[0x15] = &Chip8::opcodeFx15;
+	tableF[0x18] = &Chip8::opcodeFx18;
+	tableF[0x1E] = &Chip8::opcodeFx1E;
+	tableF[0x29] = &Chip8::opcodeFx29;
+	tableF[0x33] = &Chip8::opcodeFx33;
+	tableF[0x55] = &Chip8::opcodeFx55;
+	tableF[0x65] = &Chip8::opcodeFx65;
+}
+
+void Chip8::tableDispatch() {
+	(this->*table[(opcode_ & 0xF000) >> 12])();
+}
+
+void Chip8::table0Dispatch() {
+	(this->*table0[opcode_ & 0x00FF])();
+}
+
+void Chip8::table8Dispatch() {
+	(this->*table8[opcode_ & 0x000F])();
+}
+
+void Chip8::tableEDispatch() {
+	(this->*tableE[opcode_ & 0x00FF])();
+}
+
+void Chip8::tableFDispatch() {
+	(this->*tableF[opcode_ & 0x00FF])();
 }
 
 uint16_t Chip8::decodeNNN() const {
@@ -108,10 +184,24 @@ uint8_t Chip8::decodeKK() const {
 	return opcode_ & 0x00FF;
 }
 
-void Chip8::opcodeNull() {}
+void Chip8::jump(uint16_t addr) {
+	programCounter_ = addr;
+}
+
+uint8_t Chip8::getRandByte() {
+	return static_cast<uint8_t>(randByte(rng));
+}
+
+void Chip8::opcodeNull() {
+	std::cerr << "Unknown opcode: 0x"
+		<< std::hex
+		<< opcode_
+		<< '\n';
+}
 
 void Chip8::opcode00E0() {
 	display_.fill(0);
+	drawFlag_ = true;
 }
 
 void Chip8::opcode00EE() {

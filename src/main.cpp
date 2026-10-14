@@ -1,32 +1,43 @@
-// chip8.cpp : Defines the entry point for the application.
-//
-
 #include "Chip8.hpp"
 #include "SDLApp.hpp"
 #include <iostream>
 
-int main() {
-	static const std::filesystem::path romPath = "D:/code/source/re/repo/pj_chip8/input/IBM Logo.ch8";
+constexpr int cyclePerFrame{ 10 };
+constexpr auto frameDuration = std::chrono::microseconds{ 16667 };
+constexpr std::string_view inputFolder{ "input" };
+
+int main(int argc, char* argv[]) {
+	if (argc != 2) {
+		std::cerr << "Usage: chip8 <rom_file>\n";
+		return 1;
+	}
+	const auto romPath = std::filesystem::path{ inputFolder } / argv[1];
+	if (!std::filesystem::exists(romPath)) {
+		std::cerr << "Rom not found: " << romPath << '\n';
+		return 1;
+	}
 	Chip8 chip8;
-	chip8.readRom(romPath);
+	if (!chip8.readRom(romPath)) {
+		return 1;
+	}
+
 	SDLApp app;
-	bool running = true;
-	auto lastTimer = std::chrono::steady_clock::now();
+	bool running{ true };
 
 	while (running) {
-		running = app.processEvents(chip8.keypad());
-		for (int i = 0; i < 10; ++i) {
+		auto frameStart = std::chrono::steady_clock::now();
+		running = app.processKeypad(chip8.keypad());
+		for (int i = 0; i < cyclePerFrame; ++i) {
 			chip8.cpuCycle();
 		}
-		auto now = std::chrono::steady_clock::now();
-		if (now - lastTimer >= std::chrono::milliseconds(16)) {
-			chip8.updateTimers();
-			lastTimer = now;
+		chip8.updateTimers();
+		app.renderDisplay(chip8.display());
+		auto frameTime = std::chrono::steady_clock::now() - frameStart;
+		if (frameTime < frameDuration) {
+			auto sleepDuration = std::chrono::duration_cast<std::chrono::milliseconds>(frameDuration - frameTime);
+			SDL_Delay(sleepDuration.count());
 		}
-		app.render(chip8.display());
-		SDL_Delay(1);
 	}
 	
 	return 0;
 }
-

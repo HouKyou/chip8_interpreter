@@ -4,6 +4,7 @@
 #include <array>
 #include <filesystem>
 #include <random>
+#include <chrono>
 
 class Chip8 {
 public:
@@ -182,16 +183,16 @@ public:
 	void opcodeFx65();
 
 private:
-	static constexpr std::size_t RegisterCount = 16;
-	static constexpr std::size_t MemorySize = 4096;
-	static constexpr std::size_t StackSize = 16;
-	static constexpr uint16_t StartAddress = 0x200;
-	static constexpr std::size_t KeyCount = 16;
-	static constexpr std::size_t DisplayWidth = 64;
-	static constexpr std::size_t DisplayHeight = 32;
-	static constexpr std::size_t FontTableSize = 80;
-	static constexpr std::size_t FontsStartAddress = 0x50;
-	static constexpr std::array<uint8_t, FontTableSize> fontTable = {
+	static constexpr std::size_t RegisterCount{ 16 };
+	static constexpr std::size_t MemorySize{ 4096 };
+	static constexpr std::size_t StackSize{ 16 };
+	static constexpr uint16_t StartAddress{ 0x200 };
+	static constexpr std::size_t KeyCount{ 16 };
+	static constexpr std::size_t DisplayWidth{ 64 };
+	static constexpr std::size_t DisplayHeight{ 32 };
+	static constexpr std::size_t FontTableSize{ 80 };
+	static constexpr std::size_t FontsStartAddress{ 0x50 };
+	static constexpr std::array<uint8_t, FontTableSize> fontTable{
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1
 		0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2

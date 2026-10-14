@@ -20,7 +20,7 @@ SDLApp::~SDLApp() {
     SDL_Quit();
 }
 
-bool SDLApp::processEvents(std::array<uint8_t, KeyCount>& keypad) {
+bool SDLApp::processKeypad(std::array<uint8_t, KeyCount>& keypad) {
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
         if(event.type == SDL_EVENT_QUIT) 
@@ -54,7 +54,7 @@ bool SDLApp::processEvents(std::array<uint8_t, KeyCount>& keypad) {
 	return true;
 }
 
-void SDLApp::render(const std::array<uint8_t, DisplayWidth* DisplayHeight>& display) {
+void SDLApp::renderDisplay(const std::array<uint8_t, DisplayWidth* DisplayHeight>& display) {
     SDL_SetRenderDrawColor(
         renderer_,
         0, 0, 0, 255

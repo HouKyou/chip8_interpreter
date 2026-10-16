@@ -3,6 +3,8 @@
 #include<SDL3/SDL.h>
 #include<array>
 
+class Debugger;
+
 class SDLApp {
 public:
 	SDLApp();
@@ -13,8 +15,10 @@ public:
 	static constexpr std::size_t DisplayHeight{ 32 };
 	static constexpr std::size_t FontTableSize{ 80 };
 
-	bool processKeypad(std::array<uint8_t, KeyCount>& keypad);
-	void renderDisplay(const std::array<uint8_t, DisplayWidth * DisplayHeight>& display);
+	bool processEvents(std::array<uint8_t, KeyCount>& keypad, 
+		Debugger& debugger);
+	void renderDisplay(const std::array<uint8_t, 
+		DisplayWidth * DisplayHeight>& display);
 
 private:
 	SDL_Window* window_{ nullptr };

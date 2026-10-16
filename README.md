@@ -90,16 +90,16 @@ Execution:
 
 ## Building
 
-### Req*irements
+### Requirements
 
 - C++20 compatible compi*er
 - CMake 3.8+
 - SDL3
 
 ### Build
-*```bash
+```bash
 cmake -B build
 cmake --build build
 ```
 
-This project is provided for educ*tional purposes.
+This project is provided for educational purposes.

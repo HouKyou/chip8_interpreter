@@ -99,9 +99,7 @@ Execution:
 ### Build
 *```bash
 cmake -B build
-*make --build build
+cmake --build build
 ```
 
-## License*
 This project is provided for educ*tional purposes.
-````*

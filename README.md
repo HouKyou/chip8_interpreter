@@ -85,14 +85,14 @@ table[0x3] = &Chip8::opcode3xkk;
 Execution:
 
 ```cpp
-(this->*table[(opcode_ & 0xF000) >* 12])();
+(this->*table[(opcode_ & 0xF000) > 12])();
 ```
 
 ## Building
 
 ### Requirements
 
-- C++20 compatible compi*er
+- C++20 compatible compiler
 - CMake 3.8+
 - SDL3
 

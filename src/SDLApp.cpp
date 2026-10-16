@@ -1,4 +1,5 @@
 #include "SDLApp.hpp"
+#include "Debugger.hpp"
 
 SDLApp::SDLApp() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -20,7 +21,8 @@ SDLApp::~SDLApp() {
     SDL_Quit();
 }
 
-bool SDLApp::processKeypad(std::array<uint8_t, KeyCount>& keypad) {
+bool SDLApp::processEvents(std::array<uint8_t, KeyCount>& keypad,
+    Debugger& debugger) {
     SDL_Event event;
     while(SDL_PollEvent(&event)) {
         if(event.type == SDL_EVENT_QUIT) 
@@ -29,6 +31,15 @@ bool SDLApp::processKeypad(std::array<uint8_t, KeyCount>& keypad) {
            event.type != SDL_EVENT_KEY_UP) 
             continue;
         bool pressed = event.type == SDL_EVENT_KEY_DOWN;
+
+        if (pressed) {
+            switch (event.key.key) {
+                case SDLK_F5: debugger.resume(); break;
+                case SDLK_F6: debugger.pause(); break;
+                case SDLK_F10: debugger.requestStep(); break;
+            }
+        }
+
         switch(event.key.key) {
             case SDLK_1: keypad[0x1] = pressed; break;
             case SDLK_2: keypad[0x2] = pressed; break;
@@ -54,7 +65,8 @@ bool SDLApp::processKeypad(std::array<uint8_t, KeyCount>& keypad) {
 	return true;
 }
 
-void SDLApp::renderDisplay(const std::array<uint8_t, DisplayWidth* DisplayHeight>& display) {
+void SDLApp::renderDisplay(const std::array<uint8_t, 
+    DisplayWidth* DisplayHeight>& display) {
     SDL_SetRenderDrawColor(
         renderer_,
         0, 0, 0, 255

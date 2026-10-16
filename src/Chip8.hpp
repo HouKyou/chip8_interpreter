@@ -14,9 +14,19 @@ public:
 
 	bool readRom(const std::filesystem::path& romPath);
 	void dumpMemory() const;
-	const auto& display() { return display_; }
-	auto& keypad() { return keypad_; }
 	void updateTimers();
+	void resetDrawFlag();
+
+	uint16_t programCounter() const { return programCounter_; }
+	uint16_t opcode() const { return opcode_; }
+	uint16_t indexRegister() const { return indexRegister_; }
+	uint16_t stackPointer() const { return stackPointer_; }
+	bool drawFlag() const { return drawFlag_; }
+	const auto& registers() const { return registers_; }
+	const auto& stack() const { return stack_; }
+	const auto& memory() const { return memory_; }
+	const auto& display() const { return display_; }
+	auto& keypad() { return keypad_; }
 
 	void initialize();
 	void setFontsTable();

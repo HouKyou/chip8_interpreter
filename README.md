@@ -102,4 +102,5 @@ cmake -B build
 cmake --build build
 ```
 
+## License 
 This project is provided for educational purposes.

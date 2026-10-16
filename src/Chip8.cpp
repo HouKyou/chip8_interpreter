@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <iomanip>
 
 Chip8::Chip8() {
 	initialize();
@@ -68,6 +69,10 @@ void Chip8::dumpMemory() const {
 void Chip8::updateTimers() {
 	if (delayTimer_ > 0) --delayTimer_;
 	if (soundTimer_ > 0) --soundTimer_;
+}
+
+void Chip8::resetDrawFlag() {
+	drawFlag_ = false;
 }
 
 void Chip8::initialize() {
@@ -295,7 +300,7 @@ void Chip8::opcode8xy5() {
 
 void Chip8::opcode8xy6() {
 	const uint8_t x = decodeX();
-	const uint8_t y = decodeY();
+	//const uint8_t y = decodeY();
 	registers_[0xF] = (registers_[x] & 0x1);
 	registers_[x] >>= 1;
 }
@@ -309,7 +314,7 @@ void Chip8::opcode8xy7() {
 
 void Chip8::opcode8xyE() {
 	const uint8_t x = decodeX();
-	const uint8_t y = decodeY();
+	//const uint8_t y = decodeY();
 	registers_[0xF] = registers_[x] >> 7;
 	registers_[x] <<= 1;
 }
@@ -362,6 +367,7 @@ void Chip8::opcodeDxyn() {
 			display_[index] ^= 1;
 		}
 	}
+	drawFlag_ = true;
 }
 
 void Chip8::opcodeEx9E() {
